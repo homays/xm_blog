@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.common.Constants;
 import com.example.common.enums.ResultCodeEnum;
@@ -15,6 +16,8 @@ import com.example.service.UserService;
 import com.example.mapper.UserMapper;
 import com.example.vo.req.RegisterDTO;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
 * @author lenovo
@@ -40,6 +43,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         registerDTO.setRole(RoleEnum.USER.name());
         User user = BeanUtil.copyProperties(registerDTO, User.class);
         save(user);
+    }
+
+    @Override
+    public void deleteBatch(List<Integer> ids) {
+        deleteBatch(ids);
+    }
+
+    @Override
+    public void deleteById(Integer id) {
+        deleteById(id);
+    }
+
+    @Override
+    public User selectById(Integer id) {
+        return getOne(Wrappers.<User>lambdaQuery()
+                .eq(User::getId, id));
+    }
+
+    @Override
+    public List<User> selectAll(User user) {
+        return list();
+    }
+
+    @Override
+    public Page<User> selectPage(User user, Integer pageNum, Integer pageSize) {
+        Page<User> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        if (StrUtil.isNotBlank(user.getUsername())) {
+            wrapper.like(User::getUsername, user.getUsername());
+        }
+        wrapper.like(StrUtil.isBlank(user.getPhone()), User::getPhone, user.getPhone());
+        wrapper.like(StrUtil.isBlank(user.getEmail()), User::getEmail, user.getEmail());
+        wrapper.like(StrUtil.isBlank(user.getInfo()), User::getInfo, user.getInfo());
+        return page(page, wrapper);
     }
 }
 
